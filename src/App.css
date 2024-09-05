@@ -1,0 +1,13 @@
+body {
+  margin: 0;
+}
+.button {
+  background-color: transparent;
+  outline: none;
+  cursor: pointer;
+  border: none;
+}
+.input {
+  border: none;
+  background: none;
+}

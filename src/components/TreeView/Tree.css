@@ -1,4 +1,30 @@
 .tree-view {
-    display: flex;
-    gap: 0.5rem;
+  display: flex;
+  width: fit-content;
+  cursor: pointer;
+  user-select: none;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+.tree-view div {
+  display: flex;
+  align-items: center;
+}
+.tree-view:hover .tree-icon {
+  opacity: 1;
+}
+.treeview-open {
+  display: flex;
+  gap: 0.5rem;
+}
+.tree-icon {
+  opacity: 0;
+  transition: all 0.5s;
+}
+ul {
+  list-style-type: none;
+  display: none;
+}
+ul.is-open {
+  display: block;
 }
