@@ -1,89 +1,134 @@
 import { useEffect, useRef, useState } from "react";
 import { FileIcon } from "../../assets/FileIcon";
-import { FolderIcon } from "../../assets/FolderIcon";
+import { OpenFolderIcon } from "../../assets/OpenFolderIcon";
 import type { TreeData } from "../../types/data.types";
 import "./Tree.css";
-import { PencilIcon } from "../../assets/PencilIcon";
 import { TrashIcon } from "../../assets/TrashIcon";
+import { AddIcon } from "../../assets/AddIcon";
+import { FolderIcon } from "../../assets/FolderIcon";
+import { AnimatePresence, motion } from "framer-motion";
 interface Props {
   name?: string;
   data: true | TreeData;
-  state: TreeData;
+  state: true | TreeData;
+  prevState: true | TreeData;
   isOpen?: boolean;
-  handleDelete: (state: TreeData, name: string) => void;
-  handleChange: (state: TreeData, name: string, input: string) => void;
+  OnDelete: (state: TreeData, name: string) => void;
+  OnChange: (
+    state: TreeData,
+    name: string,
+    input: string,
+    currentValue: TreeData
+  ) => void;
+  onAdd: (state: TreeData, defaultValue: string) => void;
 }
 
 export const TreeView = (props: Props) => {
   const {
     data,
+    prevState,
     name = "root",
     isOpen = "true",
-    handleDelete,
+    OnDelete,
     state,
-    handleChange,
+    OnChange,
+    onAdd,
   } = props;
   const input = useRef(null);
+  const [focus, setFocus] = useState(false);
   const [inputValue, setInputValue] = useState<string>(name);
-  const [inputDisabled, setInputDisabled] = useState<boolean>(true);
   const [open, setOpen] = useState(false);
-  useEffect(() => {
-    if (!inputDisabled) {
-      input.current.focus();
-    }
-  }, [inputDisabled]);
-  const changeName = () => {
-    setInputDisabled((prev) => !prev);
-  };
+  const defaultValue = "new";
   const type = typeof data === "boolean" ? "file" : "folder";
-
-  if (!data) return;
-
+  const list = useRef(null);
+  if (!state) return;
   const handleClick: React.MouseEventHandler<HTMLDivElement> = () => {
     setOpen(!open);
   };
-
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    if (!focus) {
+      OnChange(prevState, name, inputValue, data);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus]);
   return (
-    <ul className={`${isOpen && "is-open"}`}>
-      <li className={`tree-view`}>
-        <div onClick={handleClick} className="treeview-open">
-          <div>{type === "folder" ? <FolderIcon /> : <FileIcon />}</div>
-          <div>
-            <input
-              className="input"
-              type="text"
-              ref={input}
-              disabled={inputDisabled}
-              value={inputValue}
-              onChange={(event) => {
-                setInputValue(event.target.value);
-                handleChange(state, name, inputValue);
-              }}
-            />
-          </div>
-        </div>
-        <button onClick={changeName} className="button tree-icon">
-          <PencilIcon />
-        </button>
-        <button
-          onClick={() => handleDelete(state, name)}
-          className="button tree-icon"
-        >
-          <TrashIcon />
-        </button>
-      </li>
-
+    <ul ref={list} className={`${isOpen && "is-open"}`}>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0 }}
+            animate={{ height: "auto" }}
+            exit={{ height: 0 }}
+            style={{ overflow: "hidden" }}
+            transition={{ duration: 1 }}
+          >
+            <li className={`tree-view`}>
+              <div onClick={handleClick} className="treeview-open">
+                <div>
+                  {type === "folder" ? (
+                    open ? (
+                      <OpenFolderIcon />
+                    ) : (
+                      <FolderIcon />
+                    )
+                  ) : (
+                    <FileIcon />
+                  )}
+                </div>
+                <div>
+                  <input
+                    className="input"
+                    type="text"
+                    onFocus={() => {
+                      setFocus(true);
+                    }}
+                    onBlur={() => {
+                      setFocus(false);
+                    }}
+                    disabled={name === "root"}
+                    ref={input}
+                    value={inputValue}
+                    onChange={(event) => {
+                      setInputValue(event.target.value);
+                    }}
+                  />
+                </div>
+              </div>
+              {name !== "root" && (
+                <button
+                  onClick={() => OnDelete(prevState, name)}
+                  className="button tree-icon"
+                >
+                  <TrashIcon />
+                </button>
+              )}
+              {name !== "root" && type !== "file" && (
+                <button
+                  onClick={() => onAdd(data, defaultValue)}
+                  className="button tree-icon"
+                >
+                  <AddIcon />
+                </button>
+              )}
+            </li>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <hr />
       {type === "folder" &&
         Object.keys(data).map((name): TreeData => {
           return (
             <TreeView
               key={name}
               name={name}
+              prevState={data}
               data={data[name]}
               isOpen={open}
-              handleDelete={handleDelete}
+              OnDelete={OnDelete}
               state={state}
-              handleChange={handleChange}
+              OnChange={OnChange}
+              onAdd={onAdd}
             />
           );
         })}

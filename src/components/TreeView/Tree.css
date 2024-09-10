@@ -22,9 +22,21 @@
   transition: all 0.5s;
 }
 ul {
-  list-style-type: none;
-  display: none;
+  opacity: 0;
+  transition: all 1s;
+}
+ul hr {
+  opacity: 0;
+  transition: all 1s;
 }
 ul.is-open {
-  display: block;
+  opacity: 1;
+  position: relative;
+}
+ul.is-open hr {
+  opacity: 1;
+  position: absolute;
+  left: -1%;
+  bottom: 0;
+  height: 100%;
 }

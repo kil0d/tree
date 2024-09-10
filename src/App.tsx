@@ -6,29 +6,41 @@ import { TreeData } from "./types/data.types";
 function App() {
   const [treeState, setTreeState] = useState(data);
   const handleDelete = (state: TreeData, name: string) => {
-    return Object.keys(state).map((key) => {
-      if (key == name) {
-        delete state[key];
-        return setTreeState({ ...data });
-      }
-      handleDelete(state[key], name);
-    });
+    delete state[name];
+    setTreeState((prev) => ({ ...prev }));
   };
-  const handleChange = (state: TreeData, name: string, input: string) => {
-    return Object.keys(state).map((key) => {
-      if (key === name) {
-        return setTreeState({ ...data });
-      }
-      handleChange(state[key], name, input);
-    });
+  const handleChange = (
+    prevState: TreeData,
+    name: string,
+    input: string,
+    currentValue: TreeData
+  ) => {
+    delete prevState[name];
+    prevState[input] = currentValue;
+    if (input.includes(".")) {
+      prevState[input] = true;
+      setTreeState((prev) => ({ ...prev }));
+      return;
+    } else if (!input.includes(".") && typeof currentValue === "boolean") {
+      prevState[input] = {};
+      setTreeState((prev) => ({ ...prev }));
+      return;
+    }
+    return setTreeState((prev) => ({ ...prev }));
+  };
+  const handleAdd = (state: TreeData, defaultValue: string) => {
+    state[defaultValue] = {};
+    return setTreeState((prev) => ({ ...prev, ...state[defaultValue] }));
   };
   return (
     <div>
       <TreeView
         state={treeState}
-        data={data}
-        handleChange={handleChange}
-        handleDelete={handleDelete}
+        data={treeState}
+        prevState={treeState}
+        OnChange={handleChange}
+        OnDelete={handleDelete}
+        onAdd={handleAdd}
       />
     </div>
   );
